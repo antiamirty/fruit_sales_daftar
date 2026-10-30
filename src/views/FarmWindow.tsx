@@ -359,7 +359,7 @@ export const FarmWindow: React.FC<FarmWindowProps> = ({ onClose }) => {
                                 onChange={e => handleFieldChange(idx, 'sup_name', e.target.value)}
                                 className="w-full bg-yellow-50 focus:bg-white outline-none text-black border border-blue-400 py-0 text-xs font-bold cursor-pointer"
                               >
-                                {db.suppliers.map((s, sIdx) => (
+                                {wholesaleStore.getState().suppliers.map((s, sIdx) => (
                                   <option key={`sup_opt_${s.sup_id}_${sIdx}`} value={s.sup_name}>
                                     {s.sup_name}
                                   </option>

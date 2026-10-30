@@ -39,6 +39,7 @@ import {
   AppUser
 } from '../types/schema';
 import { syncEngine } from './syncEngine';
+import { fetchRemoteState, saveRemoteState } from './supabase';
 
 const STORAGE_KEY = 'fruit67_wholesale_db';
 
@@ -131,9 +132,83 @@ const defaultInitialData: DatabaseState = {
 class WholesaleStore {
   private state: DatabaseState;
   private listeners: Set<() => void> = new Set();
+  private loading = true;
+  private remoteReady = false;
+  private hasLocalEdits = false;
+  private pushTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.state = this.load();
+    this.loading = false;
+    void this.hydrateFromRemote();
+  }
+
+  private hydrateFromRemote = async (): Promise<void> => {
+    syncEngine.markSaving();
+    let remote: unknown;
+    try {
+      remote = await fetchRemoteState();
+    } catch (e) {
+      console.error('Error loading data from Supabase', e);
+      syncEngine.markError(e instanceof Error ? e.message : String(e));
+      setTimeout(() => void this.hydrateFromRemote(), 10000);
+      return;
+    }
+    this.remoteReady = true;
+    if (remote && typeof remote === 'object' && !this.hasLocalEdits) {
+      this.applyRemoteState(remote as DatabaseState);
+      syncEngine.markSaved();
+    } else {
+      await this.pushNow();
+    }
+  };
+
+  private applyRemoteState(remote: DatabaseState) {
+    this.hasLocalEdits = false;
+    this.state = { ...defaultInitialData, ...remote };
+    this.writeLocalCache();
+    this.notify();
+  }
+
+  private writeLocalCache() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    } catch (e) {
+      console.error('Error saving storage', e);
+    }
+  }
+
+  private schedulePush() {
+    if (!this.remoteReady) return;
+    syncEngine.markSaving();
+    if (this.pushTimer) clearTimeout(this.pushTimer);
+    this.pushTimer = setTimeout(() => void this.pushNow(), 500);
+  }
+
+  private async pushNow() {
+    this.pushTimer = null;
+    try {
+      await saveRemoteState(this.state);
+      syncEngine.markSaved();
+    } catch (e) {
+      console.error('Error saving data to Supabase', e);
+      syncEngine.markError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  public async reloadFromRemote(): Promise<DatabaseState> {
+    syncEngine.markSaving();
+    try {
+      const remote = await fetchRemoteState();
+      if (remote && typeof remote === 'object') {
+        this.applyRemoteState(remote as DatabaseState);
+      }
+      syncEngine.markSaved();
+      return this.state;
+    } catch (e) {
+      syncEngine.markError(e instanceof Error ? e.message : String(e));
+      throw e;
+    }
   }
 
   private load(): DatabaseState {
@@ -247,12 +322,10 @@ class WholesaleStore {
 
   private save(newState: DatabaseState) {
     this.state = newState;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-    } catch (e) {
-      console.error('Error saving storage', e);
-    }
+    if (!this.loading) this.hasLocalEdits = true;
+    this.writeLocalCache();
     this.notify();
+    this.schedulePush();
   }
 
   public subscribe(listener: () => void): () => void {
@@ -1484,10 +1557,6 @@ class WholesaleStore {
       owner_sahb_records: []
     };
     this.save(cleanState);
-    syncEngine.recordChange('all', 'all_tables', 'DELETE', 'all_mock', {
-      action: 'clear_all_mock_data',
-      timestamp: new Date().toISOString()
-    });
   }
 
   // 30. استيراد وتحديث البيانات المباشرة من SQL Server (local1 / fruit67_db)
@@ -1497,19 +1566,6 @@ class WholesaleStore {
       ...imported
     };
     this.save(updatedState);
-    syncEngine.recordChange('all', 'all_tables', 'UPDATE', 'sql_server_sync', {
-      action: 'import_from_sql_server',
-      timestamp: new Date().toISOString()
-    });
-  }
-
-  // 30.1 جلب كافة بيانات قاعدة بيانات SQL Server بدون بيانات وهمية
-  public fetchAllSqlServerData(): DatabaseState {
-    syncEngine.recordChange('all', 'all_tables', 'UPDATE', 'fetch_all_sql_server', {
-      action: 'fetch_all_data',
-      timestamp: new Date().toISOString()
-    });
-    return this.state;
   }
 
   // 30.2 استيراد وتطبيق البيانات من JSON (مطابق لجميع جداول SQL Server الـ 20 تماماً وبأعلى دقة)

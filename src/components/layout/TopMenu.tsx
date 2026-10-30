@@ -248,30 +248,32 @@ export const TopMenu: React.FC<TopMenuProps> = ({
           <span className="font-bold text-slate-800 text-[13px] tracking-wide">
             الرئيسية ------- ( محل 67 )
           </span>
-          {/* مؤشر حالة الاتصال والمزامنة مع سيرفر SQL Server LocalDB */}
           <button
             type="button"
             onClick={() => onSelectWindow('w_sql_server_connect')}
             className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold border transition-colors cursor-pointer mr-3 ${
-              syncStatus.isOnline
-                ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border-emerald-400'
-                : 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-400'
+              syncStatus.state === 'error'
+                ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-400'
+                : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border-emerald-400'
             }`}
-            title="انقر لفتح شاشة إدارة اتصال SQL Server والمزامنة"
+            title="انقر لعرض حالة حفظ البيانات في السحابة"
           >
             <span
               className={`w-2 h-2 rounded-full ${
-                syncStatus.isOnline ? 'bg-emerald-600 animate-pulse' : 'bg-amber-600'
+                syncStatus.state === 'error'
+                  ? 'bg-amber-600'
+                  : syncStatus.state === 'saving'
+                  ? 'bg-blue-600 animate-pulse'
+                  : 'bg-emerald-600'
               }`}
             />
             <span>
-              {syncStatus.isOnline ? 'SQL Server (local1): متصل' : 'قاعدة بيانات محلية (Offline)'}
+              {syncStatus.state === 'error'
+                ? 'خطأ في الحفظ السحابي'
+                : syncStatus.state === 'saving'
+                ? 'جارٍ الحفظ...'
+                : 'محفوظ في السحابة'}
             </span>
-            {syncStatus.pendingCount > 0 && (
-              <span className="bg-amber-600 text-white text-[10px] px-1.5 rounded-full font-mono font-bold">
-                {syncStatus.pendingCount} معلق
-              </span>
-            )}
           </button>
         </div>
 
@@ -977,7 +979,7 @@ export const TopMenu: React.FC<TopMenuProps> = ({
               <button onClick={() => handleItemClick('w_sql_server_connect')} className="w-full text-right px-3 py-1.5 hover:bg-blue-50 font-bold flex items-center justify-between text-blue-900 bg-blue-50/50">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span>اتصال SQL Server (local1)</span>
+                  <span>حالة قاعدة البيانات السحابية</span>
                 </span>
                 <span className="text-[10px] font-mono text-blue-800 bg-blue-100 px-1 rounded border border-blue-300">12-4</span>
               </button>
