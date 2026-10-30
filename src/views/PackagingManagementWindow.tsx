@@ -926,6 +926,7 @@ export const PackagingManagementWindow: React.FC<PackagingManagementWindowProps>
                             <td className="px-2 py-1">
                               <input
                                 type="text"
+                                inputMode="numeric"
                                 value={row.mobile || ''}
                                 onChange={e => {
                                   const val = e.target.value;
@@ -990,6 +991,7 @@ export const PackagingManagementWindow: React.FC<PackagingManagementWindowProps>
                                 {isSelected ? (
                                   <input
                                     type="text"
+                                    inputMode="numeric"
                                     value={s.mobile || ''}
                                     onChange={e => {
                                       const val = e.target.value;

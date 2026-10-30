@@ -464,6 +464,7 @@ export const SuppliersWindow: React.FC<SuppliersWindowProps> = ({ onClose }) => 
                           <td className="px-2 py-0.5 text-right">
                             <input
                               type="text"
+                              inputMode="numeric"
                               value={s.sup_mobile || ''}
                               onChange={e => handleFieldChange(idx, 'sup_mobile', e.target.value)}
                               placeholder=""
