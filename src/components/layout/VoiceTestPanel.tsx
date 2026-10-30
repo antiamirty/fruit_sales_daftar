@@ -1,19 +1,43 @@
 import React, { useState } from 'react';
-import { ClipboardList, RotateCcw, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ClipboardList, RotateCcw, X } from 'lucide-react';
 import { isVoiceDictationSupported } from './VoiceDictationButton';
 
-const TEST_CASES = [
-  { label: 'اسم (نص)', hint: 'قل: أحمد محمد علي', expected: 'يكتب الكلام كما هو', type: 'text' },
-  { label: 'مبلغ (رقم)', hint: 'قل: مية وخمسين', expected: 'يكتب 150', type: 'number' },
-  { label: 'كمية (رقم صحيح)', hint: 'قل: خمسة وعشرين', expected: 'يكتب 25', type: 'numeric' },
-  { label: 'وزن (كسر عشري)', hint: 'قل: اتنين نقطة خمسة', expected: 'يكتب 2.5', type: 'number' },
-  { label: 'ملاحظات (نص حر)', hint: 'قل أي جملة', expected: 'يكتب الجملة كما هي', type: 'textarea' },
-] as const;
+type FieldKind = 'text' | 'number' | 'numeric' | 'textarea';
+
+interface TestCase {
+  id: string;
+  label: string;
+  hint: string;
+  expected: string;
+  kind: FieldKind;
+  answer?: number;
+}
+
+const TEST_CASES: TestCase[] = [
+  { id: 'name', label: 'اسم (نص)', hint: 'قل: أحمد محمد علي', expected: 'يكتب الكلام كما هو', kind: 'text' },
+  { id: 'amount', label: 'مبلغ (رقم)', hint: 'قل: مية وخمسين', expected: 'يكتب 150', kind: 'number', answer: 150 },
+  { id: 'quantity', label: 'كمية (رقم صحيح)', hint: 'قل: خمسة وعشرين', expected: 'يكتب 25', kind: 'numeric', answer: 25 },
+  { id: 'weight', label: 'وزن (كسر عشري)', hint: 'قل: اتنين نقطة خمسة', expected: 'يكتب 2.5', kind: 'number', answer: 2.5 },
+  { id: 'note', label: 'ملاحظات (نص حر)', hint: 'قل أي جملة', expected: 'يكتب الجملة كما هي', kind: 'textarea' },
+];
+
+const isMatch = (test: TestCase, value: string) => {
+  if (value.trim() === '') return false;
+  if (test.answer === undefined) return true;
+  return Number(value) === test.answer;
+};
+
+const fieldClass = (matched: boolean) =>
+  `w-full bg-white text-slate-900 border rounded px-2 py-1 text-sm outline-none focus:border-blue-700 ${
+    matched ? 'border-green-600 ring-1 ring-green-600' : 'border-slate-400'
+  }`;
 
 export const VoiceTestPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSupported] = useState(() => isVoiceDictationSupported());
-  const [fieldsVersion, setFieldsVersion] = useState(0);
+  const [values, setValues] = useState<Record<string, string>>({});
+
+  const matchedCount = TEST_CASES.filter(test => isMatch(test, values[test.id] ?? '')).length;
 
   return (
     <div className="fixed bottom-4 left-20 z-[60] flex flex-col items-start gap-2" dir="rtl">
@@ -24,7 +48,7 @@ export const VoiceTestPanel: React.FC = () => {
             <div className="flex items-center gap-1">
               <button
                 type="button"
-                onClick={() => setFieldsVersion(v => v + 1)}
+                onClick={() => setValues({})}
                 aria-label="مسح الحقول"
                 title="مسح كل الحقول لتجربة جديدة"
                 className="p-1 rounded hover:bg-slate-100 text-slate-600"
@@ -54,28 +78,62 @@ export const VoiceTestPanel: React.FC = () => {
             <li>اضغط Tab للانتقال للحقل التالي، أو قل «التالي» أو «السابق».</li>
           </ol>
 
-          <div key={fieldsVersion} className="flex flex-col gap-2">
-            {TEST_CASES.map(test => (
-              <div key={test.label} className="flex flex-col gap-1 border-t border-slate-200 pt-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-800">{test.label}</span>
-                  <span className="text-slate-600">{test.hint}</span>
+          <div
+            className={`text-xs font-bold rounded px-2 py-1 ${
+              matchedCount === TEST_CASES.length
+                ? 'bg-green-50 text-green-800 border border-green-300'
+                : 'bg-slate-50 text-slate-700 border border-slate-200'
+            }`}
+          >
+            مطابق: {matchedCount} من {TEST_CASES.length}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {TEST_CASES.map(test => {
+              const value = values[test.id] ?? '';
+              const matched = isMatch(test, value);
+              const attempted = value.trim() !== '';
+              const onChange = (next: string) => setValues(prev => ({ ...prev, [test.id]: next }));
+              return (
+                <div key={test.id} className="flex flex-col gap-1 border-t border-slate-200 pt-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-800">{test.label}</span>
+                    <span className="text-slate-600">{test.hint}</span>
+                  </div>
+                  {test.kind === 'textarea' ? (
+                    <textarea
+                      rows={2}
+                      value={value}
+                      onChange={e => onChange(e.target.value)}
+                      className={fieldClass(matched)}
+                    />
+                  ) : (
+                    <input
+                      type={test.kind === 'number' ? 'number' : 'text'}
+                      inputMode={test.kind === 'numeric' ? 'numeric' : undefined}
+                      value={value}
+                      onChange={e => onChange(e.target.value)}
+                      className={fieldClass(matched)}
+                    />
+                  )}
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-600">المتوقع: {test.expected}</span>
+                    {matched && (
+                      <span className="flex items-center gap-1 font-bold text-green-700">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        مطابق
+                      </span>
+                    )}
+                    {!matched && attempted && (
+                      <span className="flex items-center gap-1 font-bold text-amber-700">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        غير مطابق
+                      </span>
+                    )}
+                  </div>
                 </div>
-                {test.type === 'textarea' ? (
-                  <textarea
-                    rows={2}
-                    className="w-full bg-white text-slate-900 border border-slate-400 rounded px-2 py-1 text-sm outline-none focus:border-blue-700"
-                  />
-                ) : (
-                  <input
-                    type={test.type === 'number' ? 'number' : 'text'}
-                    inputMode={test.type === 'numeric' ? 'numeric' : undefined}
-                    className="w-full bg-white text-slate-900 border border-slate-400 rounded px-2 py-1 text-sm outline-none focus:border-blue-700"
-                  />
-                )}
-                <span className="text-[11px] text-slate-600">المتوقع: {test.expected}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
