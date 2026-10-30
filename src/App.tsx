@@ -38,6 +38,7 @@ import { InvoicesManagementWindow } from './views/InvoicesManagementWindow';
 import { DatabaseManagementWindow } from './views/DatabaseManagementWindow';
 import { SqlServerConnectWindow } from './views/SqlServerConnectWindow';
 import { VoiceDictationButton } from './components/layout/VoiceDictationButton';
+import { VoiceTestPanel } from './components/layout/VoiceTestPanel';
 
 // شاشات زر الشركة (PowerBuilder Company Menu Windows)
 import { CompanyInfoDialog } from './views/company/CompanyInfoDialog';
@@ -585,6 +586,7 @@ export default function App() {
       )}
 
       <VoiceDictationButton />
+      <VoiceTestPanel />
     </div>
   );
 }

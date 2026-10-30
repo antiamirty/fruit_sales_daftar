@@ -35,6 +35,8 @@ const getSpeechRecognitionConstructor = (): SpeechRecognitionConstructor | null 
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 };
 
+export const isVoiceDictationSupported = () => getSpeechRecognitionConstructor() !== null;
+
 const isTextField = (el: EventTarget | null): el is TextField => {
   if (el instanceof HTMLTextAreaElement) return !el.readOnly && !el.disabled;
   if (el instanceof HTMLInputElement) {
