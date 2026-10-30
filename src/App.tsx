@@ -37,6 +37,7 @@ import { EditsWindow } from './views/EditsWindow';
 import { InvoicesManagementWindow } from './views/InvoicesManagementWindow';
 import { DatabaseManagementWindow } from './views/DatabaseManagementWindow';
 import { SqlServerConnectWindow } from './views/SqlServerConnectWindow';
+import { VoiceDictationButton } from './components/layout/VoiceDictationButton';
 
 // شاشات زر الشركة (PowerBuilder Company Menu Windows)
 import { CompanyInfoDialog } from './views/company/CompanyInfoDialog';
@@ -582,6 +583,8 @@ export default function App() {
           onClose={() => setPrintReceipt(null)}
         />
       )}
+
+      <VoiceDictationButton />
     </div>
   );
 }
