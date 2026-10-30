@@ -174,6 +174,7 @@ export const SettingsWindow: React.FC = () => {
             <label className="block text-slate-600 font-medium mb-1">هاتف الوكالة (tel)</label>
             <input
               type="text"
+              inputMode="numeric"
               value={company.tel}
               onChange={e => setCompany({ ...company, tel: e.target.value })}
               className="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 font-mono text-slate-800"

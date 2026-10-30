@@ -244,6 +244,7 @@ export const CustomerLedgerWindow: React.FC<CustomerLedgerWindowProps> = ({
                   <label className="block font-bold text-slate-800 mb-1">الهاتف:</label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     value={editMobile}
                     onChange={e => setEditMobile(e.target.value)}
                     className="w-full p-1.5 bg-white border border-slate-400 text-slate-900"

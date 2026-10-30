@@ -82,6 +82,7 @@ export const BranchDataDialog: React.FC<BranchDataDialogProps> = ({ onClose }) =
               <div className="border-l border-slate-300 p-0.5">
                 <input
                   type="text"
+                  inputMode="numeric"
                   value={tel}
                   onChange={e => setTel(e.target.value)}
                   placeholder="رقم الهاتف"

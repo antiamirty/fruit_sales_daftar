@@ -1079,6 +1079,7 @@ export const DatabaseManagementWindow: React.FC<DatabaseManagementWindowProps> =
                 <label className="block text-slate-700 font-bold mb-1">هاتف الوكالة</label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   value={companyForm.tel}
                   onChange={e => setCompanyForm({ ...companyForm, tel: e.target.value })}
                   className="w-full bg-slate-50 border-2 border-slate-300 rounded px-2.5 py-1.5 font-mono text-slate-900"

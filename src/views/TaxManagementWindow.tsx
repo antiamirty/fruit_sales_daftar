@@ -535,6 +535,7 @@ export const TaxManagementWindow: React.FC<TaxManagementWindowProps> = ({
                         type="text"
                         value={batchNumber}
                         onChange={e => setBatchNumber(e.target.value)}
+                        inputMode="numeric"
                         className="w-20 bg-white border border-[#7f9db9] px-1.5 py-0.5 text-center font-mono font-bold text-slate-900 outline-none"
                       />
                     </div>

@@ -167,6 +167,7 @@ export const CompanyManagementWindow: React.FC<CompanyManagementWindowProps> = (
                 <label className="block font-bold text-slate-800 mb-1">رقم الهاتف:</label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   value={tel}
                   onChange={e => setTel(e.target.value)}
                   className="w-full p-1.5 bg-white border border-slate-400 text-slate-900 shadow-inner"

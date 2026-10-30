@@ -467,6 +467,7 @@ export const CustomersWindow: React.FC<CustomersWindowProps> = ({ onClose }) => 
                           <td className="px-2 py-0.5 text-right">
                             <input
                               type="text"
+                              inputMode="numeric"
                               value={c.customer_mobile || ''}
                               onChange={e => handleFieldChange(idx, 'customer_mobile', e.target.value)}
                               placeholder=""
