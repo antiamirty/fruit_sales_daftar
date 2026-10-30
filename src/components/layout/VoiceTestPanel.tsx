@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ClipboardList, X } from 'lucide-react';
+import { ClipboardList, RotateCcw, X } from 'lucide-react';
 import { isVoiceDictationSupported } from './VoiceDictationButton';
 
 const TEST_CASES = [
@@ -13,6 +13,7 @@ const TEST_CASES = [
 export const VoiceTestPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSupported] = useState(() => isVoiceDictationSupported());
+  const [fieldsVersion, setFieldsVersion] = useState(0);
 
   return (
     <div className="fixed bottom-4 left-20 z-[60] flex flex-col items-start gap-2" dir="rtl">
@@ -20,14 +21,25 @@ export const VoiceTestPanel: React.FC = () => {
         <div className="w-80 max-h-[70vh] overflow-y-auto bg-white border border-slate-300 shadow-xl rounded-lg p-4 flex flex-col gap-3 text-slate-900">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-sm text-slate-900">اختبار الإملاء الصوتي</h3>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              aria-label="إغلاق"
-              className="p-1 rounded hover:bg-slate-100 text-slate-600"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setFieldsVersion(v => v + 1)}
+                aria-label="مسح الحقول"
+                title="مسح كل الحقول لتجربة جديدة"
+                className="p-1 rounded hover:bg-slate-100 text-slate-600"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                aria-label="إغلاق"
+                className="p-1 rounded hover:bg-slate-100 text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {!isSupported && (
@@ -42,7 +54,7 @@ export const VoiceTestPanel: React.FC = () => {
             <li>اضغط Tab للانتقال للحقل التالي، أو قل «التالي» أو «السابق».</li>
           </ol>
 
-          <div className="flex flex-col gap-2">
+          <div key={fieldsVersion} className="flex flex-col gap-2">
             {TEST_CASES.map(test => (
               <div key={test.label} className="flex flex-col gap-1 border-t border-slate-200 pt-2">
                 <div className="flex items-center justify-between text-xs">
